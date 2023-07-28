@@ -9,12 +9,13 @@ import license from 'rollup-plugin-license'
 
 interface Args {
     'config-intermediate-output-dir': string,
+    'config-configuration': "Release" | "Debug",
 }
 
 export default (args: Args): RollupOptions => {
 
     const baseDir = args['config-intermediate-output-dir'] || path.join(__dirname, 'dist');
-
+    const configuration = args['config-configuration'];
     const typeScriptOptions: RollupTypescriptOptions = {
         tsconfig: './tsconfig.json',
         sourceMap: true
@@ -23,7 +24,7 @@ export default (args: Args): RollupOptions => {
     const result: RollupOptions = {
         input: 'app.ts',
         output: {
-            file: path.join(baseDir, 'app.js'),
+            file: configuration == 'Release' ? path.join(baseDir, 'app.min.js') : path.join(baseDir, 'app.js'),
             sourcemap: true,
             format: 'es'
         },
@@ -34,7 +35,7 @@ export default (args: Args): RollupOptions => {
             license({
                 banner: {
                     commentStyle: 'ignored',
-                    content: 'For license information please see AuthenticationService.mjs.LICENSE.txt'
+                    content: 'For license information please see app.js.LICENSE.txt'
                 },
                 thirdParty: {
                     output: path.join(baseDir, 'app.js.LICENSE.txt'),
@@ -48,7 +49,7 @@ export default (args: Args): RollupOptions => {
                 module: true,
                 format: {
                     ecma: 2020,
-                    comments: /.*For license information please see AuthenticationService.mjs.LICENSE.txt.*/
+                    comments: /.*For license information please see app.js.LICENSE.txt.*/
                 },
                 keep_classnames: false,
                 keep_fnames: false,

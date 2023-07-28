@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx rollup -c ./rollup.config.ts --configPlugin typescript --config-intermediate-output-dir ./dist/Debug",
+    "build": "npm run build:%npm_config_build_config%",
+    "build:Release": "npx rollup -c ./rollup.config.ts --configPlugin typescript --config-intermediate-output-dir ./dist/Release --config-configuration Release",
+    "build:Debug": "npx rollup -c ./rollup.config.ts --configPlugin typescript --config-intermediate-output-dir ./dist/Debug --config-configuration Debug",
     "clean": "tsc --build --clean"
   },
   "keywords": [],
