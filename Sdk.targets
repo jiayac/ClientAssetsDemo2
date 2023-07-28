@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <!-- 
+  Adding the scripts.g.props generation task.
+  -->
+  <UsingTask TaskName="GenerateNPMCommandProps"
+  AssemblyFile="$(MSBuildThisFileDirectory)\..\tools\Microsoft.VisualStudio.JavaScript.Tasks.dll"/>
+
+  <!--
+  Rule files that don't need localization go in the neutral directory to save duplicating files into each language
+  -->
+  <PropertyGroup Condition="'$(JspsXamlNeutralResourcesDirectory)' == ''">
+    <JspsXamlNeutralResourcesDirectory>$(MSBuildThisFileDirectory)Rules</JspsXamlNeutralResourcesDirectory>
+  </PropertyGroup>
+
+  <!--
+  Locate the approriate localized xaml resources based on the language ID or name.
+  The logic here matches the resource manager sufficiently to handle the fixed set of 
+  possible VS languages and directories on disk.
+  We cannot respect the exact probe order of the resource manager as this has to evaluate statically
+  and we have only LangName and LangID and no access to System.Globalization API.
+  -->
+  <PropertyGroup Condition="'$(JspsXamlResourcesDirectory)' == ''">
+    <!-- 1. Probe for exact match against LangName. (e.g. pt-BR) -->
+    <JspsXamlResourcesDirectory>$(MSBuildThisFileDirectory)Rules\$(LangName)</JspsXamlResourcesDirectory>
+
+    <!-- 2. Handle special cases of languages which would not match above or below. -->
+    <JspsXamlResourcesDirectory Condition="!Exists('$(JspsXamlResourcesDirectory)') and '$(LangID)' == '2052'">$(MSBuildThisFileDirectory)Rules\zh-Hans</JspsXamlResourcesDirectory>
+    <JspsXamlResourcesDirectory Condition="!Exists('$(JspsXamlResourcesDirectory)') and '$(LangID)' == '1028'">$(MSBuildThisFileDirectory)Rules\zh-Hant</JspsXamlResourcesDirectory>
+
+    <!-- 3. Probe for parent by taking portion the portion before the hyphen (e.g. fr-FR -> fr) -->
+    <JspsXamlResourcesDirectory Condition="!Exists('$(JspsXamlResourcesDirectory)')">$(MSBuildThisFileDirectory)Rules\$(LangName.Split('-')[0])</JspsXamlResourcesDirectory>
+
+    <!-- 4. Fall back to neutral resources if all of the above fail -->
+    <JspsXamlResourcesDirectory Condition="!Exists('$(JspsXamlResourcesDirectory)')">$(JspsXamlNeutralResourcesDirectory)</JspsXamlResourcesDirectory>
+  </PropertyGroup>
+
+  <!-- Capabilities for this project.  Conditions should be based on platform|configuration only. -->
+  <ItemGroup>
+    <ProjectCapability Include="JSProjectSystem" />
+    <ProjectCapability Include="UseFileGlobs" />
+    <ProjectCapability Include="OpenProjectFile" />
+    <ProjectCapability Include="HandlesOwnReload" />
+    <ProjectCapability Include="ProjectConfigurationsDeclaredAsItems" />
+    <ProjectCapability Include="ProjectPropertiesEditor" />
+    <ProjectCapability Include="ProjectPropertyInterception" />
+    <ProjectCapability Include="AvoidAddingProjectGuid" />
+  </ItemGroup>
+
+  <!-- Automatically include default items. -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' ">
+    <!-- Automatically include TypeScriptConfiguration items. -->
+    <TypeScriptConfiguration Include="$(DefaultTypeScriptConfigurationItemIncludes)" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultTypeScriptConfigurationItems)' == 'true' " />
+  </ItemGroup>
+
+  <!-- If EnableDefaultNoneItems, then everything else that wasn't added already will now be added as None items. -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultNoneItems)' == 'true' ">
+    <!-- Automatically include everything as None items. -->
+    <None Include="**/*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+
+    <!-- Automatically include everything as None items. -->
+    <None Include="$(DefaultItemForceIncludes)" />
+
+    <!-- If there were any items added as anything other than None already, then remove those. -->
+    <None Remove="$(DefaultTypeScriptConfigurationItemIncludes)" Condition=" '$(EnableDefaultTypeScriptConfigurationItems)' == 'true' " />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\ProjectItemsSchema.xaml;"/>
+
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\general.xaml;">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\debugger_general.xaml;">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\general_file.xaml">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\scc.xaml">
+      <Context>Invisible</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\BuildProperties.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\DeployProperties.xaml;">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\LaunchJsonDebugger.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="
+                        $(JspsXamlResourcesDirectory)\folder.xaml;
+                        $(JspsXamlResourcesDirectory)\none.xaml;
+                        ">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(JspsXamlResourcesDirectory)\general.browseobject.xaml">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <!-- 
+  This property group was added simply to address some needed properties for Microsoft.Common.targets. We should not copy build output because Common.targets only 
+  handles .dlls and .exe, and we don't generate those. 
+  -->
+  <PropertyGroup>
+    <OutputPath>$(MSBuildProjectFullPath)\</OutputPath>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkMoniker>.NETFramework,Version=$(TargetFrameworkVersion)</TargetFrameworkMoniker>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+
+    <!-- 
+    Adding this property to avoid breaking dependencies after renaming this to PackageJsonDirectory. 
+    If the project set up BuildCommandWorkingDirectory like our previous version, then use this for package.json directory.
+    -->
+    <PackageJsonDirectory Condition="'$(BuildCommandWorkingDirectory)' != ''">$(BuildCommandWorkingDirectory)</PackageJsonDirectory>
+    
+  </PropertyGroup>
+
+  <Target Name="CreateManifestResourceNames" />
+
+  <!-- 
+  CoreCompile is a target inside target Build on Microsoft.Common.targets that is not implemented there but allows us to personalize our compile/build flow, while 
+  executing all the other targets inside Build regularly.
+  -->
+  <Target Name="CoreCompile" DependsOnTargets="RunNpmInstall;GenerateNPMCommandProps">
+    <Exec Command="$(BuildCommand)" WorkingDirectory="$(PackageJsonDirectory)" Condition=" '$(BuildCommand)' != '' AND '$(ShouldRunBuildScript)' == 'true'"/>
+  </Target>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+
+  <!-- 
+  Override to PrepareForBuild on Microsoft.Common.targets as this target tries to create folders for project outputs - but that's not necessary for our project
+  system. This was creating a warning MSB3191 for failure creating folders. We don't need it because we are not using MSBuild to build, npm build does that for us.
+  -->
+  <Target Name="PrepareForBuild" DependsOnTargets="$(PrepareForBuildDependsOn)" />
+
+    <!-- 
+    This target was added - for now - to hook our npm install to the restore phase of MSBuild. It will run before Restore (the target used when you restore a project)
+    and _GenerateProjectRestoreGraph (a target used when you restore on a solution level).
+    -->
+    <Target Name="NPMRestore" AfterTargets="Restore;_GenerateProjectRestoreGraph"/>
+
+    <!--
+    Override ResolveAssemblyReferences as it throws a warning when trying to access the AssemblyCache and we don't need any assembly.
+    -->
+    <Target
+     Name="ResolveAssemblyReferences"
+     Returns=""
+     DependsOnTargets="$(ResolveAssemblyReferencesDependsOn)" />
+
+  <!--
+  Our personalized Clean. First executing any command set on CleanCommand and hooking it to BeforeClean running it before it. 
+  -->
+  <Target Name="_CleanBuildOutput" BeforeTargets="BeforeClean" DependsOnTargets="GenerateNPMCommandProps">
+    <Exec Command="$(CleanCommand)" WorkingDirectory="$(PackageJsonDirectory)" Condition=" '$(CleanCommand)' != '' "/>
+  </Target>
+
+  <!-- 
+  This target will ensure npm install runs before our build so node_modules is there. It will check for the file .install-check inside obj folder so it
+  compares timestamps with package.json. If some alteration happened on package.json, it will run npm install again. After running, it touches the file again
+  to update the timestamp. If npm install fails, it does not touch the install-check file. You can find NpmInstallCheck on Sdk.props.
+  -->
+  <Target Name="RunNpmInstall" Condition=" $(ShouldRunNpmInstall) == 'true' " Inputs="$(PackageJsonDirectory)package.json" Outputs="$(NpmInstallCheck)">
+    <!-- Ensure Node.js is installed -->
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCodeNpmVersion" />
+    </Exec>
+    <Error Condition="'$(ErrorCodeNpmVersion)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec WorkingDirectory="$(PackageJsonDirectory)" Command="npm install">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCodeNpmInstall" />
+    </Exec>
+    <Touch Files="$(NpmInstallCheck)" Condition="'$(ErrorCodeNpmInstall)' == '0'" AlwaysCreate="true" />
+  </Target>
+
+  <!-- 
+  This target will read the package.json file of the project and generate the MSBuild properties for the npm scripts, so that will be accessible and
+  usable by MSBuild targets.
+  -->
+  <Target Name="GenerateNPMCommandProps">
+
+    <GenerateNPMCommandProps PackageJsonPath="$(PackageJsonDirectory)package.json">
+      <Output TaskParameter="NPMScripts" ItemName="PackageJsonScripts" />
+    </GenerateNPMCommandProps>
+
+    <!--
+    For each ITaskItem coming from the target we iterate through it and assign to the correct MSBuild property. The order determines the priority
+    eg. if a package.json has a "start" and a "serve" script, the "start" script will be assigned to StartupCommand.
+    -->
+    <PropertyGroup>
+      <BuildCommand Condition="'$(BuildCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'build'">npm run build</BuildCommand>
+      <BuildCommand Condition="'$(BuildCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'compile'">npm run compile</BuildCommand>
+
+      <StartupCommand Condition="'$(StartupCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'start'">npm run start</StartupCommand>
+      <StartupCommand Condition="'$(StartupCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'serve'">npm run serve</StartupCommand>
+      <StartupCommand Condition="'$(StartupCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'dev'">npm run dev</StartupCommand>
+
+      <TestCommand Condition="'$(TestCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'test'">npm run test</TestCommand>
+
+      <CleanCommand Condition="'$(CleanCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'clean'">npm run clean</CleanCommand>
+
+      <PublishCommand Condition="'$(PublishCommand)' == '' AND '%(PackageJsonScripts.Name)' == 'publish'">npm run publish</PublishCommand>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Collecting the build output as an ItemGroup -->
+  <Target Name="JavaScriptOutputGroup" Returns="@(JavaScriptOutput)" BeforeTargets="_NpmGetCopyToPublishDirectoryItems" >
+    <ItemGroup Condition="$(PublishAssetsDirectory) != ''">
+      <JavaScriptOutput Include="$(PublishAssetsDirectory)\**" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ===================================================================================================================================================
+  This following area is the configuration for the static web assets feature when referenced by an ASP .NET Core project and the legacy Publish flow.
+   -->
+  
+  <!-- 
+  Legacy Publish flow - this is the first working version of Publish when integrated with a .NET project. It will be kept for back compatibility now.
+  The new flow can be seen below by the GetStaticWebAssetsProjectConfiguration target.
+  
+  Explanation of first flow (now outdated):
+  Since we don't copy targets using Microsoft.Common.targets we do this ourselves using this target to copy our output files to the Publish folder.
+  This works by running the ProductionBuildCommand (usually `npm run build`) and then adding the generated output to the property AllPublishItemsFullPathWithTargetPath
+  with both those Copy properties set to 'Always' as we need to signalize that these files should be copied. We hook this to run before GetCopyToPublishDirectoryItems
+  as this is the target that will populate this list with the .csproj output files for Publish.
+  -->
+  <Target Name="_NpmGetCopyToPublishDirectoryItems" DependsOnTargets="RunNpmInstall" BeforeTargets="GetCopyToPublishDirectoryItems">
+    <Exec Command="$(ProductionBuildCommand)" WorkingDirectory="$(PackageJsonDirectory)" Condition=" '$(ProductionBuildCommand)' != '' "/>
+    <ItemGroup>
+      <AllPublishItemsFullPathWithTargetPath Include="@(JavaScriptOutput)">
+        <TargetPath>wwwroot\%(RecursiveDir)\%(FileName)%(Extension)</TargetPath>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </AllPublishItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
+    
+  <PropertyGroup>
+    <!-- Let the user configure the `SourceId` metadata for the assets. This is useful when we have a project that produces assets that are
+         consumed by a library, that wants to pack the assets as if they were their own. Changing the source id in these assets will make
+         them "indistinguisable" from assets that were produced by the consuming project, to the rest of the pipeline.
+         In other words, its a way of saying, there is only one "source" even if there are two physical projects.
+    -->      
+    <StaticWebAssetSourceId Condition="'$(StaticWebAssetSourceId)' == ''">$(ProjectName)</StaticWebAssetSourceId>
+
+    <!-- Let the user configure the base path for the assets. This is used to define a prefix inside the wwwroot where all the files
+      must be located. For example, if the output is a file index.js, the consuming project will pretend that the file is in 
+      wwwroot/_content/<<Project.Client>>/index.js 
+    -->
+
+    <!-- This is targeting a library, so we want to follow the same library conventions -->
+    <StaticWebAssetBasePath Condition="'$(StaticWebAssetSourceId)' != '$(ProjectName)'">_content/$(StaticWebAssetSourceId)</StaticWebAssetBasePath>
+
+    <!-- This is targeting an app, so we want to follow the app conventions -->
+    <StaticWebAssetBasePath Condition="'$(StaticWebAssetSourceId)' == '$(ProjectName)'"></StaticWebAssetBasePath>
+  </PropertyGroup>
+
+  <Target Name="GetStaticWebAssetsProjectConfiguration" Returns="@(_StaticWebAssetThisProjectConfiguration)">
+    <ItemGroup>
+      <_StaticWebAssetThisProjectConfiguration Include="$(MSBuildProjectFullPath)">
+        <Version>2</Version>
+        <Source>$(StaticWebAssetSourceId)</Source>
+        <GetBuildAssetsTargets>GetCurrentProjectBuildStaticWebAssetItems</GetBuildAssetsTargets>
+        <AdditionalBuildProperties>
+        </AdditionalBuildProperties>
+        <AdditionalBuildPropertiesToRemove>
+        </AdditionalBuildPropertiesToRemove>
+        <GetPublishAssetsTargets>GetCurrentProjectPublishStaticWebAssetItems</GetPublishAssetsTargets>
+        <AdditionalPublishProperties>
+        </AdditionalPublishProperties>
+        <AdditionalPublishPropertiesToRemove>
+        </AdditionalPublishPropertiesToRemove>
+      </_StaticWebAssetThisProjectConfiguration>
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="GetCurrentProjectBuildStaticWebAssetItems" DependsOnTargets="PrepareForBuild" Returns="@(_BuildAsset)">
+    <ConvertToAbsolutePath Paths="$(DebugAssetsDirectory)">
+      <Output TaskParameter="AbsolutePaths" ItemName="_ContentRoot"/>
+    </ConvertToAbsolutePath>
+    <PropertyGroup>
+      <_ContentRootAbsolute>@(_ContentRoot)</_ContentRootAbsolute>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- If esproj has a list of files, this is the place. -->
+      <CandidateBuildAssets Include="$(DebugAssetsDirectory)\**" Condition="'$(DebugAssetsDirectory)' != ''"/>
+      <_BuildAsset Include="@(CandidateBuildAssets->'%(FullPath)')">
+        <SourceId>$(StaticWebAssetSourceId)</SourceId>
+        <SourceType>Discovered</SourceType>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <ContentRoot>$(_ContentRootAbsolute)</ContentRoot>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <!-- Assets with `Build` are only used during development and are never copied to the 
+             publish output. This is useful for assets that are only used during development
+             like unminified JavaScript files, source maps, etc.
+        -->
+        <AssetKind Condition="'$(StaticWebAssetSourceId)' == '$(ProjectName)'" >Build</AssetKind>
+        <!-- When the user has customized the StaticWebAssetSourceId it is because it wants to
+             pack the output from the esproj project into a nuget package as if it had generated
+             the assets itself. In this case, we want to make sure that the assets are not specific
+             to the Build or Publish steps when they are consumed as a package. This is why we
+             set the AssetMode to All.
+         -->
+        <AssetKind Condition="'$(StaticWebAssetSourceId)' != '$(ProjectName)'" >All</AssetKind>
+        <AssetMode>All</AssetMode>
+        <AssetRole>Primary</AssetRole>
+        <RelatedAsset>
+        </RelatedAsset>
+        <AssetTraitName>
+        </AssetTraitName>
+        <AssetTraitValue>
+        </AssetTraitValue>
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        <CopyToPublishDirectory Condition="'$(StaticWebAssetSourceId)' == '$(ProjectName)'" >Never</CopyToPublishDirectory>
+        <CopyToPublishDirectory Condition="'$(StaticWebAssetSourceId)' != '$(ProjectName)'" >PreserveNewest</CopyToPublishDirectory>
+        <OriginalItemSpec>%(CandidatePublishAssets.Identity)</OriginalItemSpec>
+        <ResultType>StaticWebAsset</ResultType>
+      </_BuildAsset>
+      <!-- Let the consuming project know about the $(DebugAssetsDirectory) so that new assets
+           can be discovered while the web app is running without having to restart the project.
+       -->
+      <_BuildAsset Include="$(ProjectName)\$(DebugAssetsDirectory)" Condition="Exists('$(DebugAssetsDirectory)')">
+        <Source>$(StaticWebAssetSourceId)</Source>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <ContentRoot>$(_ContentRootAbsolute)</ContentRoot>
+        <Pattern>**</Pattern>
+        <ResultType>StaticWebAssetDiscoveryPattern</ResultType>
+      </_BuildAsset>
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="GetCurrentProjectPublishStaticWebAssetItems" DependsOnTargets="_NpmGetCopyToPublishDirectoryItems;GetCopyToPublishDirectoryItems;JavaScriptOutputGroup" Returns="@(_PublishAsset)">
+    <ItemGroup>
+      <!-- If esproj has a list of files, this is the place. -->
+      <CandidatePublishAssets Include="@(JavaScriptOutput)" Condition="'$(PublishAssetsDirectory)' != ''" />
+      <_PublishAsset Include="@(CandidatePublishAssets->'%(FullPath)')">
+        <SourceId>$(StaticWebAssetSourceId)</SourceId>
+        <SourceType>Discovered</SourceType>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <ContentRoot>$(PublishAssetsDirectory)</ContentRoot>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <AssetKind>Publish</AssetKind>
+        <AssetMode>All</AssetMode>
+        <AssetRole>Primary</AssetRole>
+        <RelatedAsset>
+        </RelatedAsset>
+        <AssetTraitName>
+        </AssetTraitName>
+        <AssetTraitValue>
+        </AssetTraitValue>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <OriginalItemSpec>%(CandidatePublishAssets.Identity)</OriginalItemSpec>
+        <ResultType>StaticWebAsset</ResultType>
+      </_PublishAsset>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ============================================================================================
+  End of static web assets area
+  -->
+</Project>
