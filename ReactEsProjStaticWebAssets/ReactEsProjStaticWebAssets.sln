@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactEsProjStaticWebAssets.Server", "ReactEsProjStaticWebAssets.Server\ReactEsProjStaticWebAssets.Server.csproj", "{9656E40D-81F6-454A-A34B-0397BB7949DD}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "reactesprojstaticwebassets.client", "reactesprojstaticwebassets.client\reactesprojstaticwebassets.client.esproj", "{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9656E40D-81F6-454A-A34B-0397BB7949DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9656E40D-81F6-454A-A34B-0397BB7949DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9656E40D-81F6-454A-A34B-0397BB7949DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9656E40D-81F6-454A-A34B-0397BB7949DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C09FBF3-D5BB-4C0A-BA3B-35AF2FD2E55E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
