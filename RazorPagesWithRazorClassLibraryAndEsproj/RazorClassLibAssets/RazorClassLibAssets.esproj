@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/42.42.42">
+  <PropertyGroup>
+    <DebugAssetsDirectory>dist\$(Configuration)\</DebugAssetsDirectory>
+    <StaticWebAssetSourceId>RazorClassLib</StaticWebAssetSourceId>
+  </PropertyGroup>
+</Project>
