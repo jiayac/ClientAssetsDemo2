@@ -66,6 +66,7 @@ app.Use((ctx, nxt) =>
     {
         logger.LogInformation("Using index.html for {Path}", path);
         path = "/index.html";
+        ctx.Request.Path = path;
     }
     logger.LogInformation("Checking for compressed file for {Path}", path);
     var originalExtension = Path.GetExtension(path);
