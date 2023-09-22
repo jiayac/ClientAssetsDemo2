@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.33927.483
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorPagesWithRazorClassLibraryAndEsproj", "RazorPagesWithRazorClassLibraryAndEsproj\RazorPagesWithRazorClassLibraryAndEsproj.csproj", "{E2534A25-7723-4132-9AF7-4E80FE24FA28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesWithRazorClassLibraryAndEsproj", "RazorPagesWithRazorClassLibraryAndEsproj\RazorPagesWithRazorClassLibraryAndEsproj.csproj", "{E2534A25-7723-4132-9AF7-4E80FE24FA28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorClassLib", "RazorClassLib\RazorClassLib.csproj", "{E8C6CD5E-5A4B-484C-AB86-8EC2948FB1ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorClassLib", "RazorClassLib\RazorClassLib.csproj", "{E8C6CD5E-5A4B-484C-AB86-8EC2948FB1ED}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "RazorClassLibAssets", "RazorClassLibAssets\RazorClassLibAssets.esproj", "{9FC882E6-031C-4B57-8351-F9968F602112}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1", "BlazorApp1\BlazorApp1.csproj", "{CD9ACDA6-AD7C-4263-A239-17B2A43AA8F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,10 @@ Global
 		{9FC882E6-031C-4B57-8351-F9968F602112}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FC882E6-031C-4B57-8351-F9968F602112}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9FC882E6-031C-4B57-8351-F9968F602112}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{CD9ACDA6-AD7C-4263-A239-17B2A43AA8F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD9ACDA6-AD7C-4263-A239-17B2A43AA8F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD9ACDA6-AD7C-4263-A239-17B2A43AA8F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD9ACDA6-AD7C-4263-A239-17B2A43AA8F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

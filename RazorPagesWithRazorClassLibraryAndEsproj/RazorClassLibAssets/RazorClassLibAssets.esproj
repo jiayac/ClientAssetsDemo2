@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/42.42.42">
+﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.111-alpha">
   <PropertyGroup>
     <DebugAssetsDirectory>dist\$(Configuration)\</DebugAssetsDirectory>
+    <PublishAssetsDirectory>dist\$(Configuration)\</PublishAssetsDirectory>
     <StaticWebAssetSourceId>RazorClassLib</StaticWebAssetSourceId>
 	<BuildCommand>npm run build --build-config=$(Configuration)</BuildCommand>
   </PropertyGroup>

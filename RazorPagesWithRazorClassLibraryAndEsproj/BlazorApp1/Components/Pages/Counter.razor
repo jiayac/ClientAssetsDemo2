@@ -1,0 +1,29 @@
+﻿@page "/counter"
+@using RazorClassLib
+@attribute [RenderModeServer]
+@inject ExampleJsInterop JS
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="ShowPrompt">Click me</button>
+<p>@text</p>
+
+@code {
+    private int currentCount = 0;
+    private string text;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+    
+    private async Task ShowPrompt(MouseEventArgs e)
+    {
+        text = await JS.Prompt("Ask a question - Notice: this is a TypeScript method provided by an esproj project!");
+    }
+}
